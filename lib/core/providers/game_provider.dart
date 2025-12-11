@@ -235,9 +235,26 @@ class GameStateNotifier extends StateNotifier<GameState> {
     state = state.copyWith(phase: GamePhase.results);
   }
 
-  /// Reinicia el juego completamente
+  /// Reinicia el juego manteniendo los jugadores previos (caché)
   void resetGame() {
-    state = const GameState();
+    // Mantener jugadores pero resetear sus estados
+    final cachedPlayers = state.players
+        .map(
+          (p) => p.copyWith(
+            isImpostor: false,
+            hasSeenRole: false,
+            isEliminated: false,
+          ),
+        )
+        .toList();
+
+    state = GameState(
+      players: cachedPlayers,
+      selectedCategories: state.selectedCategories,
+      impostorCount: state.impostorCount,
+      impostorSeesHint: state.impostorSeesHint,
+      phase: GamePhase.setup,
+    );
   }
 
   /// Reinicia solo la partida actual manteniendo jugadores y categorías
