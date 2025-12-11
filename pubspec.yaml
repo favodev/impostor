@@ -54,6 +54,29 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  
+  # Generador de iconos de app
+  flutter_launcher_icons: ^0.14.3
+
+# Configuración de flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/pillo-logo.png"
+  adaptive_icon_background: "#0A0E14"
+  adaptive_icon_foreground: "assets/images/pillo-logo.png"
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: "assets/images/pillo-logo.png"
+    background_color: "#0A0E14"
+    theme_color: "#00F5FF"
+  windows:
+    generate: true
+    image_path: "assets/images/pillo-logo.png"
+  macos:
+    generate: true
+    image_path: "assets/images/pillo-logo.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
