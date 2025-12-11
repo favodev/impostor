@@ -15,12 +15,8 @@ import '../models/models.dart';
 /// 3. Los primeros N jugadores (N = impostorCount) son asignados como impostores
 /// 4. Esto garantiza distribución uniforme y verdaderamente impredecible
 class GameEngine {
-  /// Generador de números aleatorios criptográficamente seguro
-  /// Esto asegura que la asignación sea verdaderamente impredecible
   static final Random _secureRandom = Random.secure();
 
-  /// Algoritmo Fisher-Yates Shuffle para barajar lista
-  /// Es el algoritmo más eficiente O(n) y produce permutaciones uniformes
   static List<T> _shuffle<T>(List<T> list) {
     final shuffled = List<T>.from(list);
     for (int i = shuffled.length - 1; i > 0; i--) {
@@ -43,13 +39,18 @@ class GameEngine {
     return categories[index];
   }
 
-  /// Selecciona una palabra aleatoria de la categoría
-  static String selectRandomWord(Category category) {
-    if (category.words.isEmpty) {
+  /// Selecciona una palabra aleatoria de la categoría y retorna la SecretWord completa
+  static SecretWord selectRandomSecretWord(Category category) {
+    if (category.secretWords.isEmpty) {
       throw ArgumentError('La categoría debe tener al menos una palabra');
     }
-    final index = _secureRandom.nextInt(category.words.length);
-    return category.words[index];
+    final index = _secureRandom.nextInt(category.secretWords.length);
+    return category.secretWords[index];
+  }
+
+  /// Selecciona una palabra aleatoria de la categoría (solo el texto)
+  static String selectRandomWord(Category category) {
+    return selectRandomSecretWord(category).word;
   }
 
   /// Asigna roles a los jugadores
@@ -92,13 +93,13 @@ class GameEngine {
     required List<Category> selectedCategories,
     required int impostorCount,
     int? timerDuration,
-    bool impostorSeesCategory = true,
+    bool impostorSeesHint = true,
   }) {
     // Seleccionar categoría aleatoria
     final category = selectRandomCategory(selectedCategories);
 
-    // Seleccionar palabra secreta
-    final secretWord = selectRandomWord(category);
+    // Seleccionar palabra secreta con su pista
+    final secretWordData = selectRandomSecretWord(category);
 
     // Asignar roles
     final playersWithRoles = assignRoles(players, impostorCount);
@@ -110,12 +111,13 @@ class GameEngine {
       players: shuffledPlayers,
       selectedCategories: selectedCategories,
       impostorCount: impostorCount,
-      secretWord: secretWord,
+      secretWord: secretWordData.word,
+      secretHint: secretWordData.hint,
       selectedCategory: category,
       phase: GamePhase.roleReveal,
       currentPlayerIndex: 0,
       timerDuration: timerDuration,
-      impostorSeesCategory: impostorSeesCategory,
+      impostorSeesHint: impostorSeesHint,
     );
   }
 }
@@ -162,9 +164,9 @@ class GameStateNotifier extends StateNotifier<GameState> {
     state = state.copyWith(timerDuration: duration);
   }
 
-  /// Configura si el impostor ve la categoría
-  void setImpostorSeesCategory(bool value) {
-    state = state.copyWith(impostorSeesCategory: value);
+  /// Configura si el impostor ve la pista
+  void setImpostorSeesHint(bool value) {
+    state = state.copyWith(impostorSeesHint: value);
   }
 
   /// Inicia el juego con la configuración actual
@@ -176,7 +178,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
       selectedCategories: state.selectedCategories,
       impostorCount: state.impostorCount,
       timerDuration: state.timerDuration,
-      impostorSeesCategory: state.impostorSeesCategory,
+      impostorSeesHint: state.impostorSeesHint,
     );
 
     state = newState;
@@ -261,8 +263,8 @@ class GameStateNotifier extends StateNotifier<GameState> {
 /// Provider para las categorías disponibles
 final categoriesProvider =
     StateNotifierProvider<CategoriesNotifier, List<Category>>((ref) {
-      return CategoriesNotifier();
-    });
+  return CategoriesNotifier();
+});
 
 class CategoriesNotifier extends StateNotifier<List<Category>> {
   CategoriesNotifier() : super(PredefinedCategories.all);
@@ -279,16 +281,14 @@ class CategoriesNotifier extends StateNotifier<List<Category>> {
 
   /// Selecciona todas las categorías
   void selectAll() {
-    state = state
-        .map((category) => category.copyWith(isSelected: true))
-        .toList();
+    state =
+        state.map((category) => category.copyWith(isSelected: true)).toList();
   }
 
   /// Deselecciona todas las categorías
   void deselectAll() {
-    state = state
-        .map((category) => category.copyWith(isSelected: false))
-        .toList();
+    state =
+        state.map((category) => category.copyWith(isSelected: false)).toList();
   }
 
   /// Obtiene las categorías seleccionadas

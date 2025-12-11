@@ -19,22 +19,24 @@ class GameState {
   final List<Category> selectedCategories;
   final int impostorCount;
   final String? secretWord;
+  final String? secretHint; // Palabra relacionada como pista para el impostor
   final Category? selectedCategory;
   final GamePhase phase;
   final int currentPlayerIndex;
   final int? timerDuration; // En segundos, null = sin timer
-  final bool impostorSeesCategory; // Si el impostor ve la categoría o nada
+  final bool impostorSeesHint; // Si el impostor ve la pista o nada
 
   const GameState({
     this.players = const [],
     this.selectedCategories = const [],
     this.impostorCount = 1,
     this.secretWord,
+    this.secretHint,
     this.selectedCategory,
     this.phase = GamePhase.setup,
     this.currentPlayerIndex = 0,
     this.timerDuration,
-    this.impostorSeesCategory = true,
+    this.impostorSeesHint = true,
   });
 
   /// Verifica si la configuración es válida para iniciar el juego
@@ -78,22 +80,24 @@ class GameState {
     List<Category>? selectedCategories,
     int? impostorCount,
     String? secretWord,
+    String? secretHint,
     Category? selectedCategory,
     GamePhase? phase,
     int? currentPlayerIndex,
     int? timerDuration,
-    bool? impostorSeesCategory,
+    bool? impostorSeesHint,
   }) {
     return GameState(
       players: players ?? this.players,
       selectedCategories: selectedCategories ?? this.selectedCategories,
       impostorCount: impostorCount ?? this.impostorCount,
       secretWord: secretWord ?? this.secretWord,
+      secretHint: secretHint ?? this.secretHint,
       selectedCategory: selectedCategory ?? this.selectedCategory,
       phase: phase ?? this.phase,
       currentPlayerIndex: currentPlayerIndex ?? this.currentPlayerIndex,
       timerDuration: timerDuration ?? this.timerDuration,
-      impostorSeesCategory: impostorSeesCategory ?? this.impostorSeesCategory,
+      impostorSeesHint: impostorSeesHint ?? this.impostorSeesHint,
     );
   }
 }

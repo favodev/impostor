@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/constants/app_strings.dart';
 import '../../core/models/models.dart';
 import '../../core/providers/providers.dart';
 import '../../core/theme/app_theme.dart';
-import '../widgets/widgets.dart';
 import 'role_reveal_screen.dart';
 
-/// Pantalla principal de configuración del juego
+/// Pantalla de configuración de partida
 ///
-/// Implementa:
-/// - Gestión dinámica de jugadores (agregar/eliminar)
-/// - Selector de categorías en grilla
-/// - Slider para número de impostores
-/// - Validación de configuración mínima
+/// Diseño limpio con:
+/// - Campo para agregar jugadores
+/// - Lista de jugadores agregados
+/// - Selector de número de impostores
+/// - Toggle para pista
 class SetupScreen extends ConsumerStatefulWidget {
   const SetupScreen({super.key});
 
@@ -22,31 +20,14 @@ class SetupScreen extends ConsumerStatefulWidget {
   ConsumerState<SetupScreen> createState() => _SetupScreenState();
 }
 
-class _SetupScreenState extends ConsumerState<SetupScreen>
-    with SingleTickerProviderStateMixin {
+class _SetupScreenState extends ConsumerState<SetupScreen> {
   final TextEditingController _nameController = TextEditingController();
   final FocusNode _nameFocusNode = FocusNode();
-  late AnimationController _titleController;
-  late Animation<double> _titleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _titleController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _titleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _titleController, curve: Curves.easeInOut),
-    );
-  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _nameFocusNode.dispose();
-    _titleController.dispose();
     super.dispose();
   }
 
@@ -56,7 +37,6 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
       ref.read(gameStateProvider.notifier).addPlayer(name);
       _nameController.clear();
       _nameFocusNode.requestFocus();
-      // Feedback háptico
       HapticFeedback.lightImpact();
     }
   }
@@ -68,28 +48,19 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
 
   void _startGame() {
     final gameState = ref.read(gameStateProvider);
-    final selectedCategories =
-        ref.read(categoriesProvider).where((c) => c.isSelected).toList();
+    final categories = ref.read(categoriesProvider);
 
     if (gameState.players.length < 3) {
       _showError('Se necesitan al menos 3 jugadores');
       return;
     }
 
-    if (selectedCategories.isEmpty) {
-      _showError('Selecciona al menos una categoría');
-      return;
-    }
-
-    // Actualizar categorías seleccionadas en el estado del juego
-    ref
-        .read(gameStateProvider.notifier)
-        .updateSelectedCategories(selectedCategories);
+    // Seleccionar todas las categorías automáticamente
+    ref.read(gameStateProvider.notifier).updateSelectedCategories(categories);
 
     // Iniciar el juego
     ref.read(gameStateProvider.notifier).startGame();
 
-    // Feedback háptico
     HapticFeedback.mediumImpact();
 
     // Navegar a la pantalla de revelación de roles
@@ -100,7 +71,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
-        transitionDuration: const Duration(milliseconds: 500),
+        transitionDuration: const Duration(milliseconds: 400),
       ),
     );
   }
@@ -115,7 +86,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
             Text(message),
           ],
         ),
-        backgroundColor: AppTheme.cardDark,
+        backgroundColor: const Color(0xFF2A1B4D),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -129,282 +100,273 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
   @override
   Widget build(BuildContext context) {
     final gameState = ref.watch(gameStateProvider);
-    final categories = ref.watch(categoriesProvider);
-    final selectedCount = categories.where((c) => c.isSelected).length;
     final maxImpostors = (gameState.players.length - 1).clamp(1, 10);
 
     return Scaffold(
-      body: Container(
-        decoration: AppTheme.backgroundGradient,
-        child: SafeArea(
-          child: CustomScrollView(
-            slivers: [
-              // Header con título animado
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    children: [
-                      AnimatedBuilder(
-                        animation: _titleAnimation,
-                        builder: (context, child) {
-                          return Transform.scale(
-                            scale: _titleAnimation.value,
-                            child: Image.asset(
-                              AppStrings.logoPath,
-                              height: 120,
-                              fit: BoxFit.contain,
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        AppStrings.appSubtitle,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(color: AppTheme.textSecondary),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Sección de Jugadores
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: _buildPlayersSection(gameState),
-                ),
-              ),
-
-              // Sección de Categorías
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: _buildCategoriesSection(categories, selectedCount),
-                ),
-              ),
-
-              // Sección de Configuración
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: _buildSettingsSection(gameState, maxImpostors),
-                ),
-              ),
-
-              // Botón de iniciar
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: _buildStartButton(gameState, selectedCount),
-                ),
-              ),
-
-              // Espaciado inferior
-              const SliverToBoxAdapter(child: SizedBox(height: 40)),
-            ],
+      backgroundColor: AppTheme.backgroundIndigo,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_rounded),
+          color: AppTheme.textPrimary,
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: ShaderMask(
+          shaderCallback: (bounds) => const LinearGradient(
+            colors: [AppTheme.primaryNeon, AppTheme.secondaryNeon],
+          ).createShader(bounds),
+          child: const Text(
+            'NUEVA PARTIDA',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+            ),
           ),
+        ),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Sección: Agregar Jugadores
+                    _buildSectionTitle('JUGADORES', Icons.people_rounded),
+                    const SizedBox(height: 16),
+                    _buildPlayerInput(),
+                    const SizedBox(height: 16),
+                    _buildPlayersList(gameState.players),
+
+                    const SizedBox(height: 32),
+
+                    // Sección: Configuración
+                    _buildSectionTitle('CONFIGURACIÓN', Icons.settings_rounded),
+                    const SizedBox(height: 16),
+                    _buildImpostorSelector(gameState, maxImpostors),
+                    const SizedBox(height: 16),
+                    _buildHintToggle(gameState),
+                  ],
+                ),
+              ),
+            ),
+
+            // Botón Iniciar
+            _buildStartButton(gameState),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildPlayersSection(GameState gameState) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildSectionTitle(String title, IconData icon) {
+    return Row(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.people, color: AppTheme.primaryNeon),
-                const SizedBox(width: 8),
-                Text(
-                  'Jugadores',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-              ],
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: gameState.players.length >= 3
-                    ? AppTheme.accentNeon.withValues(alpha: 0.2)
-                    : AppTheme.dangerNeon.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: gameState.players.length >= 3
-                      ? AppTheme.accentNeon
-                      : AppTheme.dangerNeon,
-                ),
-              ),
-              child: Text(
-                '${gameState.players.length} / mín. 3',
-                style: TextStyle(
-                  color: gameState.players.length >= 3
-                      ? AppTheme.accentNeon
-                      : AppTheme.dangerNeon,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
+        Icon(
+          icon,
+          color: AppTheme.primaryNeon,
+          size: 20,
         ),
-        const SizedBox(height: 16),
-
-        // Input para agregar jugadores
-        Row(
-          children: [
-            Expanded(
-              child: NeonTextField(
-                controller: _nameController,
-                hintText: 'Nombre del jugador',
-                prefixIcon: Icons.person_add,
-                textInputAction: TextInputAction.done,
-                onSubmitted: (_) => _addPlayer(),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: AppTheme.primaryNeon,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primaryNeon.withValues(alpha: 0.4),
-                    blurRadius: 12,
-                    spreadRadius: 1,
-                  ),
-                ],
-              ),
-              child: IconButton(
-                onPressed: _addPlayer,
-                icon: const Icon(Icons.add, color: AppTheme.backgroundDark),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        // Lista de jugadores
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          child: Column(
-            children: gameState.players.asMap().entries.map((entry) {
-              return PlayerCard(
-                key: ValueKey(entry.value.id),
-                name: entry.value.name,
-                index: entry.key,
-                onDelete: () => _removePlayer(entry.value.id),
-              );
-            }).toList(),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            color: AppTheme.primaryNeon,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 2,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildCategoriesSection(List<Category> categories, int selectedCount) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.category, color: AppTheme.secondaryNeon),
-                const SizedBox(width: 8),
-                Text(
-                  'Categorías',
-                  style: Theme.of(context).textTheme.headlineSmall,
+  Widget _buildPlayerInput() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.primaryNeon.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _nameController,
+              focusNode: _nameFocusNode,
+              style: const TextStyle(color: AppTheme.textPrimary),
+              decoration: InputDecoration(
+                hintText: 'Nombre del jugador',
+                hintStyle: TextStyle(
+                  color: AppTheme.textSecondary.withValues(alpha: 0.5),
                 ),
-              ],
-            ),
-            TextButton.icon(
-              onPressed: () {
-                if (selectedCount == categories.length) {
-                  ref.read(categoriesProvider.notifier).deselectAll();
-                } else {
-                  ref.read(categoriesProvider.notifier).selectAll();
-                }
-                HapticFeedback.selectionClick();
-              },
-              icon: Icon(
-                selectedCount == categories.length
-                    ? Icons.deselect
-                    : Icons.select_all,
-                size: 18,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
               ),
-              label: Text(
-                selectedCount == categories.length ? 'Ninguna' : 'Todas',
+              textCapitalization: TextCapitalization.words,
+              onSubmitted: (_) => _addPlayer(),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              onPressed: _addPlayer,
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryNeon,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.add_rounded,
+                  color: AppTheme.backgroundIndigo,
+                  size: 20,
+                ),
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '$selectedCount categorías seleccionadas',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        const SizedBox(height: 16),
-
-        // Grilla de categorías
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: categories.map((category) {
-            return CategoryChip(
-              label: category.name,
-              icon: category.icon,
-              isSelected: category.isSelected,
-              onTap: () {
-                ref
-                    .read(categoriesProvider.notifier)
-                    .toggleCategory(category.id);
-                HapticFeedback.selectionClick();
-              },
-            );
-          }).toList(),
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildSettingsSection(GameState gameState, int maxImpostors) {
-    return NeonCard(
-      glowColor: AppTheme.warningNeon,
+  Widget _buildPlayersList(List<Player> players) {
+    if (players.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.03),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppTheme.textMuted.withValues(alpha: 0.2),
+            style: BorderStyle.solid,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            children: [
+              Icon(
+                Icons.person_add_rounded,
+                size: 40,
+                color: AppTheme.textMuted.withValues(alpha: 0.5),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Agrega al menos 3 jugadores',
+                style: TextStyle(
+                  color: AppTheme.textMuted.withValues(alpha: 0.7),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: players.asMap().entries.map((entry) {
+        final index = entry.key;
+        final player = entry.value;
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppTheme.secondaryNeon.withValues(alpha: 0.2),
+            ),
+          ),
+          child: Row(
+            children: [
+              // Número
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: AppTheme.secondaryNeon.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    '${index + 1}',
+                    style: const TextStyle(
+                      color: AppTheme.secondaryNeon,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Nombre
+              Expanded(
+                child: Text(
+                  player.name,
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              // Botón eliminar
+              IconButton(
+                onPressed: () => _removePlayer(player.id),
+                icon: Icon(
+                  Icons.close_rounded,
+                  color: AppTheme.dangerNeon.withValues(alpha: 0.7),
+                  size: 20,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildImpostorSelector(GameState gameState, int maxImpostors) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.dangerNeon.withValues(alpha: 0.3),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.settings, color: AppTheme.warningNeon),
-              const SizedBox(width: 8),
-              Text(
-                'Configuración',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: AppTheme.warningNeon,
-                    ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Slider de impostores
-          Row(
-            children: [
-              const Icon(
-                Icons.visibility_off,
+              Icon(
+                Icons.person_off_rounded,
                 color: AppTheme.dangerNeon,
                 size: 20,
               ),
               const SizedBox(width: 8),
-              const Text('Impostores:'),
+              const Text(
+                'Número de Pillos',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -413,27 +375,27 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
                 ),
                 decoration: BoxDecoration(
                   color: AppTheme.dangerNeon.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppTheme.dangerNeon),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   '${gameState.impostorCount}',
                   style: const TextStyle(
                     color: AppTheme.dangerNeon,
-                    fontWeight: FontWeight.bold,
                     fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
               activeTrackColor: AppTheme.dangerNeon,
               inactiveTrackColor: AppTheme.dangerNeon.withValues(alpha: 0.2),
               thumbColor: AppTheme.dangerNeon,
               overlayColor: AppTheme.dangerNeon.withValues(alpha: 0.2),
+              trackHeight: 4,
             ),
             child: Slider(
               value: gameState.impostorCount.toDouble(),
@@ -444,72 +406,116 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
                   ? (value) {
                       ref
                           .read(gameStateProvider.notifier)
-                          .setImpostorCount(value.round());
-                      HapticFeedback.selectionClick();
+                          .setImpostorCount(value.toInt());
                     }
                   : null,
             ),
           ),
           if (gameState.players.length < 3)
             Text(
-              'Agrega más jugadores para ajustar',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textMuted,
-                    fontStyle: FontStyle.italic,
+              'Agrega jugadores para ajustar',
+              style: TextStyle(
+                color: AppTheme.textMuted.withValues(alpha: 0.7),
+                fontSize: 12,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHintToggle(GameState gameState) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.warningNeon.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.lightbulb_outline_rounded,
+            color: AppTheme.warningNeon,
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Pista para el Pillo',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
                   ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  gameState.impostorSeesHint
+                      ? 'Verá una palabra relacionada'
+                      : 'Sin pistas, más difícil',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary.withValues(alpha: 0.7),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
-
-          const Divider(height: 32),
-
-          // Opción: Impostor ve categoría
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Impostor ve la categoría'),
-            subtitle: Text(
-              gameState.impostorSeesCategory
-                  ? 'El impostor verá la categoría general'
-                  : 'El impostor no tendrá ninguna pista',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            value: gameState.impostorSeesCategory,
+          ),
+          Switch(
+            value: gameState.impostorSeesHint,
             onChanged: (value) {
-              ref
-                  .read(gameStateProvider.notifier)
-                  .setImpostorSeesCategory(value);
-              HapticFeedback.selectionClick();
+              ref.read(gameStateProvider.notifier).setImpostorSeesHint(value);
             },
-            activeTrackColor: AppTheme.primaryNeon,
-            thumbColor: WidgetStateProperty.all(AppTheme.primaryNeon),
+            activeThumbColor: AppTheme.warningNeon,
+            activeTrackColor: AppTheme.warningNeon.withValues(alpha: 0.3),
+            inactiveThumbColor: AppTheme.textMuted,
+            inactiveTrackColor: AppTheme.textMuted.withValues(alpha: 0.3),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStartButton(GameState gameState, int selectedCount) {
-    final canStart = gameState.players.length >= 3 && selectedCount > 0;
+  Widget _buildStartButton(GameState gameState) {
+    final canStart = gameState.players.length >= 3;
 
-    return Column(
-      children: [
-        NeonButton(
-          text: 'INICIAR PARTIDA',
-          icon: Icons.play_arrow,
-          color: canStart ? AppTheme.accentNeon : AppTheme.textMuted,
-          expanded: true,
+    return Container(
+      padding: const EdgeInsets.all(24),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
           onPressed: canStart ? _startGame : null,
-        ),
-        if (!canStart) ...[
-          const SizedBox(height: 12),
-          Text(
-            gameState.players.length < 3
-                ? 'Necesitas al menos 3 jugadores'
-                : 'Selecciona al menos una categoría',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: AppTheme.dangerNeon),
+          style: ElevatedButton.styleFrom(
+            backgroundColor:
+                canStart ? AppTheme.primaryNeon : AppTheme.textMuted,
+            foregroundColor: AppTheme.backgroundIndigo,
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 0,
           ),
-        ],
-      ],
+          child: Text(
+            canStart
+                ? 'INICIAR PARTIDA'
+                : 'AGREGA ${3 - gameState.players.length} JUGADOR${gameState.players.length == 2 ? "" : "ES"} MÁS',
+            style: TextStyle(
+              color: canStart
+                  ? AppTheme.backgroundIndigo
+                  : AppTheme.backgroundIndigo.withValues(alpha: 0.7),
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

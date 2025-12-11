@@ -6,7 +6,7 @@ import '../../core/models/models.dart';
 import '../../core/providers/providers.dart';
 import '../../core/theme/app_theme.dart';
 import '../widgets/widgets.dart';
-import 'debate_screen.dart';
+import 'voting_screen.dart';
 
 /// Pantalla de revelación de roles (Pass-the-Device)
 ///
@@ -25,31 +25,18 @@ class RoleRevealScreen extends ConsumerStatefulWidget {
 class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     with TickerProviderStateMixin {
   bool _isRevealing = false;
-  bool _hasSeenRole = false;
   bool _isTransitioning = false; // Estado de transición para evitar flicker
 
   // Controladores de animación
-  late AnimationController _pulseController;
   late AnimationController _revealController;
   late AnimationController _impostorGlowController;
 
-  late Animation<double> _pulseAnimation;
   late Animation<double> _revealAnimation;
   late Animation<double> _impostorGlowAnimation;
 
   @override
   void initState() {
     super.initState();
-
-    // Animación de pulso para el botón "mantener presionado"
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
 
     // Animación de revelación
     _revealController = AnimationController(
@@ -75,14 +62,13 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
 
   @override
   void dispose() {
-    _pulseController.dispose();
     _revealController.dispose();
     _impostorGlowController.dispose();
     super.dispose();
   }
 
-  Future<void> _onRevealStart() async {
-    if (_hasSeenRole) return;
+  Future<void> _toggleReveal() async {
+    if (_isRevealing) return; // Ya está revelado, no hacer nada
 
     setState(() => _isRevealing = true);
     _revealController.forward();
@@ -99,16 +85,6 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     } else {
       HapticFeedback.mediumImpact();
     }
-  }
-
-  void _onRevealEnd() {
-    if (!_isRevealing) return;
-
-    setState(() {
-      _isRevealing = false;
-      _hasSeenRole = true;
-    });
-    _revealController.reverse();
 
     // Marcar que el jugador vio su rol
     ref.read(gameStateProvider.notifier).currentPlayerSawRole();
@@ -128,19 +104,22 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
       if (!mounted) return;
 
       ref.read(gameStateProvider.notifier).nextPlayer();
+
+      // Reiniciar estado para el siguiente jugador
+      _revealController.reset();
       setState(() {
-        _hasSeenRole = false;
+        _isRevealing = false;
         _isTransitioning = false;
       });
       HapticFeedback.lightImpact();
     } else {
-      // Todos han visto su rol, ir a fase de debate
+      // Todos han visto su rol, ir a votación
       ref.read(gameStateProvider.notifier).nextPlayer();
 
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              const DebateScreen(),
+              const VotingScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(
               opacity: animation,
@@ -169,8 +148,9 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     }
 
     return Scaffold(
+      backgroundColor: AppTheme.backgroundIndigo,
       body: Container(
-        decoration: AppTheme.backgroundGradient,
+        color: AppTheme.backgroundIndigo,
         child: SafeArea(
           child: Column(
             children: [
@@ -209,29 +189,50 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                 ),
               ),
 
-              // Botón siguiente (solo visible después de ver el rol)
+              // Botón siguiente/jugar (visible cuando se ha revelado)
               Padding(
                 padding: const EdgeInsets.all(24),
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 300),
-                  opacity: _hasSeenRole ? 1.0 : 0.0,
-                  child: IgnorePointer(
-                    ignoring: !_hasSeenRole,
-                    child: NeonButton(
-                      text: gameState.currentPlayerIndex <
-                              gameState.players.length - 1
-                          ? 'SIGUIENTE JUGADOR'
-                          : 'COMENZAR DEBATE',
-                      icon: gameState.currentPlayerIndex <
-                              gameState.players.length - 1
-                          ? Icons.arrow_forward
-                          : Icons.forum,
-                      expanded: true,
-                      color: AppTheme.accentNeon,
-                      onPressed: _nextPlayer,
-                    ),
-                  ),
-                ),
+                child: _isRevealing
+                    ? SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _nextPlayer,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.accentNeon,
+                            foregroundColor: AppTheme.backgroundIndigo,
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                gameState.currentPlayerIndex <
+                                        gameState.players.length - 1
+                                    ? 'SIGUIENTE'
+                                    : 'JUGAR',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 2,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(
+                                gameState.currentPlayerIndex <
+                                        gameState.players.length - 1
+                                    ? Icons.arrow_forward_rounded
+                                    : Icons.play_arrow_rounded,
+                                size: 24,
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : const SizedBox(height: 66), // Mantener espacio
               ),
             ],
           ),
@@ -295,87 +296,55 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
         const SizedBox(height: 48),
 
         // Botón de revelación
-        if (!_hasSeenRole)
-          GestureDetector(
-            onLongPressStart: (_) => _onRevealStart(),
-            onLongPressEnd: (_) => _onRevealEnd(),
-            child: AnimatedBuilder(
-              animation: _pulseAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _pulseAnimation.value,
-                  child: Container(
-                    width: 200,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppTheme.cardDark,
-                      border: Border.all(color: AppTheme.primaryNeon, width: 3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primaryNeon.withValues(alpha: 0.4),
-                          blurRadius: 30,
-                          spreadRadius: 5,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.touch_app,
-                          size: 48,
-                          color: AppTheme.primaryNeon,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'MANTENER\nPRESIONADO',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelLarge
-                              ?.copyWith(color: AppTheme.primaryNeon),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          )
-        else
-          Container(
-            padding: const EdgeInsets.all(24),
+        GestureDetector(
+          onTap: _toggleReveal,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
             decoration: BoxDecoration(
-              color: AppTheme.accentNeon.withValues(alpha: 0.1),
+              color: AppTheme.primaryNeon.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.accentNeon),
+              border: Border.all(
+                color: AppTheme.primaryNeon,
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryNeon.withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                ),
+              ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.check_circle, color: AppTheme.accentNeon),
+                Icon(
+                  Icons.visibility_rounded,
+                  color: AppTheme.primaryNeon,
+                  size: 28,
+                ),
                 const SizedBox(width: 12),
                 Text(
-                  'Rol visto',
-                  style: TextStyle(
-                    color: AppTheme.accentNeon,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  'VER MI PALABRA',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppTheme.primaryNeon,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
                 ),
               ],
             ),
           ),
+        ),
 
         const SizedBox(height: 24),
-        if (!_hasSeenRole)
-          Text(
-            'Asegúrate de que nadie más vea la pantalla',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textMuted,
-                  fontStyle: FontStyle.italic,
-                ),
-          ),
+        Text(
+          'Asegúrate de que nadie más vea la pantalla',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppTheme.textMuted,
+                fontStyle: FontStyle.italic,
+              ),
+        ),
       ],
     );
   }
@@ -553,8 +522,8 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
 
                   const SizedBox(height: 24),
 
-                  // Pista de categoría (opcional)
-                  if (gameState.impostorSeesCategory) ...[
+                  // Pista de palabra relacionada (opcional)
+                  if (gameState.impostorSeesHint) ...[
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -577,7 +546,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Categoría: ${gameState.selectedCategory?.name ?? ""}',
+                            'Pista: ${gameState.secretHint ?? ""}',
                             style: TextStyle(
                               color: AppTheme.warningNeon,
                               fontWeight: FontWeight.w500,
