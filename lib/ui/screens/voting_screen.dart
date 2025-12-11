@@ -37,12 +37,10 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
         Vibration.vibrate(duration: 500);
       }
 
-      // Mostrar diálogo de victoria y volver a jugar
       if (mounted) {
         _showVictoryDialog(votedPlayer.name);
       }
     } else {
-      // Eliminar al jugador y continuar
       setState(() {
         _eliminatedPlayerIds.add(votedPlayer.id);
         _selectedPlayer = null;
@@ -50,7 +48,139 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
       });
 
       HapticFeedback.mediumImpact();
+
+      final gameState = ref.read(gameStateProvider);
+      final remainingPlayers = gameState.players
+          .where((p) => !_eliminatedPlayerIds.contains(p.id))
+          .toList();
+
+      if (remainingPlayers.length <= 2) {
+        final impostor = remainingPlayers.firstWhere((p) => p.isImpostor);
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            _showDefeatDialog(impostor.name);
+          }
+        });
+      }
     }
+  }
+
+  void _showDefeatDialog(String impostorName) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        backgroundColor: AppTheme.backgroundIndigo,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(
+            color: AppTheme.dangerNeon,
+            width: 2,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppTheme.dangerNeon.withValues(alpha: 0.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.dangerNeon.withValues(alpha: 0.3),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.close_rounded,
+                  color: AppTheme.dangerNeon,
+                  size: 64,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Título
+              Text(
+                '¡GANÓ EL IMPOSTOR!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.orbitron(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.dangerNeon,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Nombre del impostor
+              Text(
+                impostorName,
+                style: GoogleFonts.rajdhani(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.dangerNeon,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'era el impostor',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.rajdhani(
+                  fontSize: 16,
+                  color: Colors.white70,
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Botón volver a jugar
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    ref.read(gameStateProvider.notifier).resetGame();
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => const SetupScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.dangerNeon,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.replay_rounded, size: 24),
+                      const SizedBox(width: 12),
+                      Text(
+                        'VOLVER A JUGAR',
+                        style: GoogleFonts.orbitron(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _showVictoryDialog(String impostorName) {
@@ -95,14 +225,13 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
 
               // Título
               Text(
-                '¡IMPOSTOR\nDESCUBIERTO!',
+                '¡IMPOSTOR DESCUBIERTO!',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.orbitron(
-                  fontSize: 28,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.accentNeon,
                   letterSpacing: 2,
-                  height: 1.2,
                 ),
               ),
               const SizedBox(height: 16),
