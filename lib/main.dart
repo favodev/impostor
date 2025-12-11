@@ -19,7 +19,7 @@ void main() {
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: AppTheme.backgroundDark,
+      systemNavigationBarColor: Color(0xFF1F0954), // AppTheme.backgroundIndigo
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
@@ -38,7 +38,7 @@ class PilloApp extends StatelessWidget {
       title: 'PILLO - ¿Quién es el espía?',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: const SetupScreen(),
+      home: const HomeScreen(),
     );
   }
 }

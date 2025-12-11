@@ -15,6 +15,7 @@ class AppTheme {
 
   // Colores de fondo
   static const Color backgroundDark = Color(0xFF0D0D0D); // Negro profundo
+  static const Color backgroundIndigo = Color(0xFF1F0954); // Dark Indigo
   static const Color surfaceDark = Color(0xFF1A1A2E); // Azul muy oscuro
   static const Color cardDark = Color(0xFF16213E); // Azul oscuro para cards
 
