@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/app_strings.dart';
 import '../../core/models/models.dart';
 import '../../core/providers/providers.dart';
 import '../../core/theme/app_theme.dart';
@@ -67,10 +68,8 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
 
   void _startGame() {
     final gameState = ref.read(gameStateProvider);
-    final selectedCategories = ref
-        .read(categoriesProvider)
-        .where((c) => c.isSelected)
-        .toList();
+    final selectedCategories =
+        ref.read(categoriesProvider).where((c) => c.isSelected).toList();
 
     if (gameState.players.length < 3) {
       _showError('Se necesitan al menos 3 jugadores');
@@ -151,35 +150,20 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
                         builder: (context, child) {
                           return Transform.scale(
                             scale: _titleAnimation.value,
-                            child: ShaderMask(
-                              shaderCallback: (bounds) => const LinearGradient(
-                                colors: [
-                                  AppTheme.primaryNeon,
-                                  AppTheme.secondaryNeon,
-                                ],
-                              ).createShader(bounds),
-                              child: Text(
-                                'IMPOSTOR',
-                                style: Theme.of(context).textTheme.displayLarge
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      shadows: [
-                                        Shadow(
-                                          color: AppTheme.primaryNeon
-                                              .withValues(alpha: 0.5),
-                                          blurRadius: 20,
-                                        ),
-                                      ],
-                                    ),
-                              ),
+                            child: Image.asset(
+                              AppStrings.logoPath,
+                              height: 120,
+                              fit: BoxFit.contain,
                             ),
                           );
                         },
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '¿Quién es el espía?',
-                        style: Theme.of(context).textTheme.titleMedium
+                        AppStrings.appSubtitle,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
                             ?.copyWith(color: AppTheme.textSecondary),
                       ),
                     ],
@@ -404,8 +388,8 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
               Text(
                 'Configuración',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: AppTheme.warningNeon,
-                ),
+                      color: AppTheme.warningNeon,
+                    ),
               ),
             ],
           ),
@@ -470,9 +454,9 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
             Text(
               'Agrega más jugadores para ajustar',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppTheme.textMuted,
-                fontStyle: FontStyle.italic,
-              ),
+                    color: AppTheme.textMuted,
+                    fontStyle: FontStyle.italic,
+                  ),
             ),
 
           const Divider(height: 32),

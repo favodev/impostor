@@ -1,11 +1,11 @@
 {
-    "name": "impostor",
-    "short_name": "impostor",
+    "name": "PILLO - ¿Quién es el espía?",
+    "short_name": "PILLO",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0A0E14",
+    "theme_color": "#00F5FF",
+    "description": "PILLO - Un juego social de deducción donde debes descubrir quién es el espía.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

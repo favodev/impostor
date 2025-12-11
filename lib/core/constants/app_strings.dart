@@ -1,7 +1,8 @@
 abstract class AppStrings {
   // App Info
-  static const String appName = 'IMPOSTOR';
+  static const String appName = 'PILLO';
   static const String appSubtitle = '¿Quién es el espía?';
+  static const String logoPath = 'assets/images/pillo-logo.png';
 
   // Roles
   static const String roleImpostor = 'IMPOSTOR';
