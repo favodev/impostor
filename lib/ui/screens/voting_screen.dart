@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/models/models.dart';
 import '../../core/providers/providers.dart';
 import '../../core/theme/app_theme.dart';
-import 'setup_screen.dart';
 
 /// Pantalla de votación simple
 ///
@@ -143,12 +142,9 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     ref.read(gameStateProvider.notifier).resetGame();
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(
-                        builder: (context) => const SetupScreen(),
-                      ),
-                      (route) => false,
-                    );
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.dangerNeon,
@@ -260,14 +256,10 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Resetear juego y volver a SetupScreen
                     ref.read(gameStateProvider.notifier).resetGame();
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(
-                        builder: (context) => const SetupScreen(),
-                      ),
-                      (route) => false,
-                    );
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.accentNeon,

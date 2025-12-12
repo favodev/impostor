@@ -360,7 +360,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
               ),
               const SizedBox(width: 8),
               const Text(
-                'Número de Pillos',
+                'Número de impostores',
                 style: TextStyle(
                   color: AppTheme.textPrimary,
                   fontSize: 16,
@@ -447,7 +447,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Pista para el Pillo',
+                  'Pista para el impostor',
                   style: TextStyle(
                     color: AppTheme.textPrimary,
                     fontSize: 16,
