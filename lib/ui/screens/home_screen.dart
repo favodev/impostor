@@ -1,16 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../core/constants/app_strings.dart';
 import '../../core/theme/app_theme.dart';
 import 'game_mode_screen.dart';
 
-/// Pantalla de inicio de PILLO
-///
-/// Diseño minimalista con:
-/// - Logo centrado con animación sutil
-/// - Nombre de la app
-/// - Subtítulo
-/// - Botón "JUGAR"
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -20,6 +12,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
+  // Constantes de la app
+  static const String _appName = 'PILLO';
+  static const String _appSubtitle = '¿Quién es el espía?';
+  static const String _logoPath = 'assets/images/pillo-logo.png';
+
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -114,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                           child: ClipOval(
                             child: Image.asset(
-                              AppStrings.logoPath,
+                              _logoPath,
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -134,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ],
                     ).createShader(bounds),
                     child: Text(
-                      AppStrings.appName,
+                      _appName,
                       style: Theme.of(context).textTheme.displayLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
@@ -153,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen>
 
                   // Subtítulo
                   Text(
-                    AppStrings.appSubtitle,
+                    _appSubtitle,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: AppTheme.textSecondary,
                           letterSpacing: 2,
