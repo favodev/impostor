@@ -2,18 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vibration/vibration.dart';
-import '../../core/models/models.dart';
-import '../../core/providers/providers.dart';
+import '../../core/models/game_state.dart';
+import '../../core/models/player.dart';
+import '../../core/providers/game_provider.dart';
 import '../../core/theme/app_theme.dart';
 import 'voting_screen.dart';
 
-/// Pantalla de revelación de roles (Pass-the-Device)
-///
-/// Implementa el flujo de pasar el dispositivo donde cada jugador:
-/// 1. Ve su nombre en pantalla
-/// 2. Mantiene presionado para ver su rol
-/// 3. Suelta y la pantalla vuelve a estado neutro
-/// 4. Pasa el dispositivo al siguiente jugador
 class RoleRevealScreen extends ConsumerStatefulWidget {
   const RoleRevealScreen({super.key});
 
@@ -24,7 +18,7 @@ class RoleRevealScreen extends ConsumerStatefulWidget {
 class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     with TickerProviderStateMixin {
   bool _isRevealing = false;
-  bool _isTransitioning = false; // Estado de transición para evitar flicker
+  bool _isTransitioning = false;
 
   // Controladores de animación
   late AnimationController _revealController;
@@ -67,7 +61,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
   }
 
   Future<void> _toggleReveal() async {
-    if (_isRevealing) return; // Ya está revelado, no hacer nada
+    if (_isRevealing) return;
 
     setState(() => _isRevealing = true);
     _revealController.forward();

@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/models.dart';
+import '../models/category.dart';
+import '../models/game_state.dart';
+import '../models/player.dart';
 
 /// Motor lógico del juego - Game Engine
 ///
