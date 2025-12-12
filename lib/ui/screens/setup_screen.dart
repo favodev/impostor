@@ -49,14 +49,22 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
   void _startGame() {
     final gameState = ref.read(gameStateProvider);
     final categories = ref.read(categoriesProvider);
+    final selectedCategories = categories.where((c) => c.isSelected).toList();
 
     if (gameState.players.length < 3) {
       _showError('Se necesitan al menos 3 jugadores');
       return;
     }
 
-    // Seleccionar todas las categorías automáticamente
-    ref.read(gameStateProvider.notifier).updateSelectedCategories(categories);
+    if (selectedCategories.isEmpty) {
+      _showError('Debes seleccionar al menos una categoría');
+      return;
+    }
+
+    // Actualizar categorías seleccionadas en el estado del juego
+    ref
+        .read(gameStateProvider.notifier)
+        .updateSelectedCategories(selectedCategories);
 
     // Iniciar el juego
     ref.read(gameStateProvider.notifier).startGame();
@@ -151,6 +159,46 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                     _buildImpostorSelector(gameState, maxImpostors),
                     const SizedBox(height: 16),
                     _buildHintToggle(gameState),
+
+                    const SizedBox(height: 32),
+
+                    // Sección: Categorías
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildSectionTitle(
+                              'CATEGORÍAS', Icons.category_rounded),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            ref.read(categoriesProvider.notifier).selectAll();
+                            HapticFeedback.lightImpact();
+                          },
+                          child: Text(
+                            'Todas',
+                            style: TextStyle(
+                              color: AppTheme.primaryNeon,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            ref.read(categoriesProvider.notifier).deselectAll();
+                            HapticFeedback.lightImpact();
+                          },
+                          child: Text(
+                            'Ninguna',
+                            style: TextStyle(
+                              color: AppTheme.textMuted,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _buildCategoriesGrid(),
                   ],
                 ),
               ),
@@ -479,6 +527,89 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCategoriesGrid() {
+    final categories = ref.watch(categoriesProvider);
+    final selectedCount = categories.where((c) => c.isSelected).length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (selectedCount > 0)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              '$selectedCount de ${categories.length} seleccionadas',
+              style: TextStyle(
+                color: AppTheme.primaryNeon.withValues(alpha: 0.7),
+                fontSize: 12,
+              ),
+            ),
+          ),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 2.5,
+          ),
+          itemCount: categories.length,
+          itemBuilder: (context, index) {
+            final category = categories[index];
+            return GestureDetector(
+              onTap: () {
+                ref
+                    .read(categoriesProvider.notifier)
+                    .toggleCategory(category.id);
+                HapticFeedback.lightImpact();
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: category.isSelected
+                      ? AppTheme.primaryNeon.withValues(alpha: 0.2)
+                      : Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: category.isSelected
+                        ? AppTheme.primaryNeon
+                        : Colors.white.withValues(alpha: 0.1),
+                    width: 2,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      category.icon,
+                      color: category.isSelected
+                          ? AppTheme.primaryNeon
+                          : AppTheme.textSecondary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      category.name,
+                      style: TextStyle(
+                        color: category.isSelected
+                            ? AppTheme.primaryNeon
+                            : AppTheme.textSecondary,
+                        fontWeight: category.isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 

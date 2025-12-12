@@ -284,7 +284,12 @@ final categoriesProvider =
 });
 
 class CategoriesNotifier extends StateNotifier<List<Category>> {
-  CategoriesNotifier() : super(PredefinedCategories.all);
+  CategoriesNotifier()
+      : super(
+          PredefinedCategories.all
+              .map((c) => c.copyWith(isSelected: true))
+              .toList(),
+        );
 
   /// Alterna la selección de una categoría
   void toggleCategory(String categoryId) {
