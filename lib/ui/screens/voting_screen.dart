@@ -7,10 +7,6 @@ import '../../core/models/player.dart';
 import '../../core/providers/game_provider.dart';
 import '../../core/theme/app_theme.dart';
 
-/// Pantalla de votación simple
-///
-/// Permite a los jugadores votar por quien creen que es el impostor
-/// en cada ronda hasta descubrirlo
 class VotingScreen extends ConsumerStatefulWidget {
   const VotingScreen({super.key});
 
@@ -102,8 +98,6 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Título
               Text(
                 '¡GANÓ EL IMPOSTOR!',
                 textAlign: TextAlign.center,
@@ -115,8 +109,6 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Nombre del impostor
               Text(
                 impostorName,
                 style: GoogleFonts.rajdhani(
@@ -135,8 +127,6 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-
-              // Botón volver a jugar
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -197,7 +187,6 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Ícono de éxito
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -218,8 +207,6 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Título
               Text(
                 '¡IMPOSTOR DESCUBIERTO!',
                 textAlign: TextAlign.center,
@@ -231,8 +218,6 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Nombre del impostor
               Text(
                 impostorName,
                 style: GoogleFonts.rajdhani(
@@ -250,8 +235,6 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-
-              // Botón volver a jugar
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -308,7 +291,6 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // Header con ronda
               Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
@@ -334,8 +316,6 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                   ],
                 ),
               ),
-
-              // Lista de jugadores activos
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -379,7 +359,6 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                           ),
                           child: Row(
                             children: [
-                              // Avatar
                               Container(
                                 width: 48,
                                 height: 48,
@@ -399,8 +378,6 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                                 ),
                               ),
                               const SizedBox(width: 16),
-
-                              // Nombre
                               Expanded(
                                 child: Text(
                                   player.name,
@@ -413,8 +390,6 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                                   ),
                                 ),
                               ),
-
-                              // Radio indicator
                               Container(
                                 width: 24,
                                 height: 24,
@@ -446,8 +421,6 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                   },
                 ),
               ),
-
-              // Botón votar
               Padding(
                 padding: const EdgeInsets.all(24),
                 child: SizedBox(

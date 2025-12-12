@@ -387,21 +387,39 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                       letterSpacing: 3,
                     ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppTheme.textMuted.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppTheme.accentNeon.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.accentNeon.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
                 ),
-                child: Text(
-                  gameState.selectedCategory?.name ?? '',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.textSecondary,
-                      ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      gameState.selectedCategory?.icon ?? Icons.category,
+                      color: AppTheme.accentNeon,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      gameState.selectedCategory?.name ?? '',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: AppTheme.accentNeon,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               Text(
                 'Tu palabra es:',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(

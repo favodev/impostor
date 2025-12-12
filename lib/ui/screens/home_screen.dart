@@ -12,7 +12,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
-  // Constantes de la app
   static const String _appName = 'PILLO';
   static const String _appSubtitle = '¿Quién es el espía?';
   static const String _logoPath = 'assets/images/pillo-logo.png';
@@ -81,7 +80,6 @@ class _HomeScreenState extends State<HomeScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Spacer(flex: 2),
-
                   AnimatedBuilder(
                     animation: _pulseAnimation,
                     builder: (context, child) {
@@ -93,14 +91,12 @@ class _HomeScreenState extends State<HomeScreen>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             boxShadow: [
-                              // Brillo púrpura/magenta que combina con el fondo
                               BoxShadow(
                                 color: AppTheme.secondaryNeon
                                     .withValues(alpha: 0.25),
                                 blurRadius: 50,
                                 spreadRadius: 10,
                               ),
-                              // Brillo cyan sutil
                               BoxShadow(
                                 color: AppTheme.primaryNeon
                                     .withValues(alpha: 0.15),
@@ -119,10 +115,7 @@ class _HomeScreenState extends State<HomeScreen>
                       );
                     },
                   ),
-
                   const SizedBox(height: 32),
-
-                  // Nombre de la app
                   ShaderMask(
                     shaderCallback: (bounds) => const LinearGradient(
                       colors: [
@@ -145,10 +138,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 8),
-
-                  // Subtítulo
                   Text(
                     _appSubtitle,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -156,10 +146,7 @@ class _HomeScreenState extends State<HomeScreen>
                           letterSpacing: 2,
                         ),
                   ),
-
-                  const Spacer(flex: 3),
-
-                  // Botón JUGAR
+                  const Spacer(flex: 2),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -183,8 +170,17 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ),
                   ),
-
-                  const Spacer(flex: 2),
+                  const Spacer(flex: 1),
+                  Text(
+                    'favodev',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.primaryNeon.withValues(alpha: 0.7),
+                          letterSpacing: 2,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),

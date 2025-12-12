@@ -7,13 +7,6 @@ import '../../core/providers/game_provider.dart';
 import '../../core/theme/app_theme.dart';
 import 'role_reveal_screen.dart';
 
-/// Pantalla de configuración de partida
-///
-/// Diseño limpio con:
-/// - Campo para agregar jugadores
-/// - Lista de jugadores agregados
-/// - Selector de número de impostores
-/// - Toggle para pista
 class SetupScreen extends ConsumerStatefulWidget {
   const SetupScreen({super.key});
 
@@ -62,17 +55,14 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
       return;
     }
 
-    // Actualizar categorías seleccionadas en el estado del juego
     ref
         .read(gameStateProvider.notifier)
         .updateSelectedCategories(selectedCategories);
 
-    // Iniciar el juego
     ref.read(gameStateProvider.notifier).startGame();
 
     HapticFeedback.mediumImpact();
 
-    // Navegar a la pantalla de revelación de roles
     Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
@@ -145,25 +135,18 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Sección: Agregar Jugadores
                     _buildSectionTitle('JUGADORES', Icons.people_rounded),
                     const SizedBox(height: 16),
                     _buildPlayerInput(),
                     const SizedBox(height: 16),
                     _buildPlayersList(gameState.players),
-
                     const SizedBox(height: 32),
-
-                    // Sección: Configuración
                     _buildSectionTitle('CONFIGURACIÓN', Icons.settings_rounded),
                     const SizedBox(height: 16),
                     _buildImpostorSelector(gameState, maxImpostors),
                     const SizedBox(height: 16),
                     _buildHintToggle(gameState),
-
                     const SizedBox(height: 32),
-
-                    // Sección: Categorías
                     Row(
                       children: [
                         Expanded(
@@ -339,7 +322,6 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
           ),
           child: Row(
             children: [
-              // Número
               Container(
                 width: 28,
                 height: 28,
@@ -359,7 +341,6 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              // Nombre
               Expanded(
                 child: Text(
                   player.name,
@@ -369,7 +350,6 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                   ),
                 ),
               ),
-              // Botón eliminar
               IconButton(
                 onPressed: () => _removePlayer(player.id),
                 icon: Icon(

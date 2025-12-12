@@ -1,7 +1,3 @@
-/// Modelo que representa un jugador en el juego
-///
-/// Implementa inmutabilidad para mejor rendimiento con Riverpod
-/// y evitar efectos secundarios no deseados (principio SOLID - SRP)
 class Player {
   final String id;
   final String name;
@@ -17,7 +13,6 @@ class Player {
     this.isEliminated = false,
   });
 
-  /// Factory para crear un nuevo jugador con ID único
   factory Player.create(String name) {
     return Player(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
@@ -25,8 +20,6 @@ class Player {
     );
   }
 
-  /// Crea una copia del jugador con los campos modificados
-  /// Patrón inmutable para optimizar rebuilds en Flutter
   Player copyWith({
     String? id,
     String? name,

@@ -3,11 +3,6 @@ import 'package:flutter/services.dart';
 import '../../core/theme/app_theme.dart';
 import 'setup_screen.dart';
 
-/// Pantalla de selección de modo de juego
-///
-/// Opciones:
-/// - Online (Próximamente)
-/// - Local/Presencial (Juego tradicional)
 class GameModeScreen extends StatelessWidget {
   const GameModeScreen({super.key});
 
@@ -63,7 +58,6 @@ class GameModeScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Icono
               Container(
                 width: 80,
                 height: 80,
@@ -78,7 +72,6 @@ class GameModeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              // Título
               ShaderMask(
                 shaderCallback: (bounds) => const LinearGradient(
                   colors: [AppTheme.primaryNeon, AppTheme.secondaryNeon],
@@ -94,7 +87,6 @@ class GameModeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              // Descripción
               Text(
                 'El modo online está en desarrollo.\n¡Pronto podrás jugar con amigos\ndesde cualquier lugar!',
                 textAlign: TextAlign.center,
@@ -105,7 +97,6 @@ class GameModeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              // Botón cerrar
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -158,8 +149,6 @@ class GameModeScreen extends StatelessWidget {
           child: Column(
             children: [
               const Spacer(),
-
-              // Título
               ShaderMask(
                 shaderCallback: (bounds) => const LinearGradient(
                   colors: [AppTheme.primaryNeon, AppTheme.secondaryNeon],
@@ -174,10 +163,7 @@ class GameModeScreen extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
               ),
-
               const SizedBox(height: 48),
-
-              // Opción Online
               _GameModeCard(
                 icon: Icons.wifi_rounded,
                 title: 'ONLINE',
@@ -186,10 +172,7 @@ class GameModeScreen extends StatelessWidget {
                 isComingSoon: true,
                 onTap: () => _showComingSoon(context),
               ),
-
               const SizedBox(height: 20),
-
-              // Opción Local
               _GameModeCard(
                 icon: Icons.people_rounded,
                 title: 'LOCAL',
@@ -198,7 +181,6 @@ class GameModeScreen extends StatelessWidget {
                 isComingSoon: false,
                 onTap: () => _navigateToLocal(context),
               ),
-
               const Spacer(flex: 2),
             ],
           ),
@@ -208,7 +190,6 @@ class GameModeScreen extends StatelessWidget {
   }
 }
 
-/// Card para cada modo de juego
 class _GameModeCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -249,7 +230,6 @@ class _GameModeCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Icono
             Container(
               width: 60,
               height: 60,
@@ -264,7 +244,6 @@ class _GameModeCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 20),
-            // Texto
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -314,7 +293,6 @@ class _GameModeCard extends StatelessWidget {
                 ],
               ),
             ),
-            // Flecha
             Icon(
               Icons.arrow_forward_ios_rounded,
               size: 20,
