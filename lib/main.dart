@@ -19,7 +19,7 @@ void main() {
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: Color(0xFF1F0954), // AppTheme.backgroundIndigo
+      systemNavigationBarColor: Color(0xFF1F0954),
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );

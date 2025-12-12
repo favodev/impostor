@@ -5,7 +5,6 @@ import 'package:vibration/vibration.dart';
 import '../../core/models/models.dart';
 import '../../core/providers/providers.dart';
 import '../../core/theme/app_theme.dart';
-import '../widgets/widgets.dart';
 import 'voting_screen.dart';
 
 /// Pantalla de revelación de roles (Pass-the-Device)
@@ -167,9 +166,13 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                           ),
                     ),
                     const SizedBox(height: 16),
-                    PlayerProgressIndicator(
-                      current: gameState.currentPlayerIndex,
-                      total: gameState.players.length,
+                    // Indicador de progreso
+                    Text(
+                      '${gameState.currentPlayerIndex + 1} / ${gameState.players.length}',
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
