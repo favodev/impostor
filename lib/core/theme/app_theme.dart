@@ -1,36 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Tema Cyberpunk/Noir para el juego Impostor
-///
-/// Implementa Material Design 3 con un esquema de colores oscuro
-/// y acentos neón vibrantes para crear atmósfera de misterio
 class AppTheme {
-  // Colores principales - Paleta Cyberpunk/Noir
-  static const Color primaryNeon = Color(0xFF00F5FF); // Cyan neón
-  static const Color secondaryNeon = Color(0xFFFF00FF); // Magenta neón
-  static const Color accentNeon = Color(0xFF39FF14); // Verde neón
-  static const Color warningNeon = Color(0xFFFFD700); // Dorado neón
-  static const Color dangerNeon = Color(0xFFFF3131); // Rojo neón
-
-  // Colores de fondo
-  static const Color backgroundDark = Color(0xFF0D0D0D); // Negro profundo
-  static const Color backgroundIndigo = Color(0xFF1F0954); // Dark Indigo
-  static const Color surfaceDark = Color(0xFF1A1A2E); // Azul muy oscuro
-  static const Color cardDark = Color(0xFF16213E); // Azul oscuro para cards
-
-  // Colores de texto
+  static const Color primaryNeon = Color(0xFF00F5FF);
+  static const Color secondaryNeon = Color(0xFFFF00FF);
+  static const Color accentNeon = Color(0xFF39FF14);
+  static const Color warningNeon = Color(0xFFFFD700);
+  static const Color dangerNeon = Color(0xFFFF3131);
+  static const Color backgroundDark = Color(0xFF0D0D0D);
+  static const Color backgroundIndigo = Color(0xFF1F0954);
+  static const Color surfaceDark = Color(0xFF1A1A2E);
+  static const Color cardDark = Color(0xFF16213E);
   static const Color textPrimary = Color(0xFFE8E8E8);
   static const Color textSecondary = Color(0xFFB0B0B0);
   static const Color textMuted = Color(0xFF6B6B6B);
 
-  /// Tema oscuro principal de la aplicación
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-
-      // Esquema de colores Material 3
       colorScheme: const ColorScheme.dark(
         primary: primaryNeon,
         secondary: secondaryNeon,
@@ -42,11 +30,7 @@ class AppTheme {
         onSurface: textPrimary,
         onError: backgroundDark,
       ),
-
-      // Scaffold y fondo
       scaffoldBackgroundColor: backgroundDark,
-
-      // AppBar
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -59,8 +43,6 @@ class AppTheme {
         ),
         iconTheme: const IconThemeData(color: primaryNeon),
       ),
-
-      // Cards
       cardTheme: CardThemeData(
         color: cardDark,
         elevation: 8,
@@ -70,8 +52,6 @@ class AppTheme {
           side: BorderSide(color: primaryNeon.withValues(alpha: 0.2), width: 1),
         ),
       ),
-
-      // Elevated Buttons
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryNeon,
@@ -89,8 +69,6 @@ class AppTheme {
           ),
         ),
       ),
-
-      // Outlined Buttons
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: primaryNeon,
@@ -106,8 +84,6 @@ class AppTheme {
           ),
         ),
       ),
-
-      // Text Buttons
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: secondaryNeon,
@@ -117,16 +93,12 @@ class AppTheme {
           ),
         ),
       ),
-
-      // Floating Action Button
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: accentNeon,
         foregroundColor: backgroundDark,
         elevation: 8,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
-
-      // Input Decoration
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceDark,
@@ -153,8 +125,6 @@ class AppTheme {
         labelStyle: GoogleFonts.rajdhani(color: textSecondary),
         hintStyle: GoogleFonts.rajdhani(color: textMuted),
       ),
-
-      // Slider
       sliderTheme: SliderThemeData(
         activeTrackColor: primaryNeon,
         inactiveTrackColor: primaryNeon.withValues(alpha: 0.2),
@@ -166,8 +136,6 @@ class AppTheme {
           fontWeight: FontWeight.bold,
         ),
       ),
-
-      // Chip
       chipTheme: ChipThemeData(
         backgroundColor: surfaceDark,
         selectedColor: primaryNeon.withValues(alpha: 0.3),
@@ -176,17 +144,11 @@ class AppTheme {
         side: BorderSide(color: primaryNeon.withValues(alpha: 0.5)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
-
-      // Divider
       dividerTheme: DividerThemeData(
         color: primaryNeon.withValues(alpha: 0.2),
         thickness: 1,
       ),
-
-      // Icon
       iconTheme: const IconThemeData(color: primaryNeon, size: 24),
-
-      // Dialog
       dialogTheme: DialogThemeData(
         backgroundColor: cardDark,
         elevation: 24,
@@ -195,23 +157,17 @@ class AppTheme {
           side: BorderSide(color: primaryNeon.withValues(alpha: 0.3)),
         ),
       ),
-
-      // Snackbar
       snackBarTheme: SnackBarThemeData(
         backgroundColor: cardDark,
         contentTextStyle: GoogleFonts.rajdhani(color: textPrimary),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         behavior: SnackBarBehavior.floating,
       ),
-
-      // Progress Indicator
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: primaryNeon,
         linearTrackColor: surfaceDark,
         circularTrackColor: surfaceDark,
       ),
-
-      // Text Theme
       textTheme: TextTheme(
         displayLarge: GoogleFonts.orbitron(
           fontSize: 48,
@@ -279,7 +235,6 @@ class AppTheme {
     );
   }
 
-  /// Decoración para contenedores con efecto neón
   static BoxDecoration neonBoxDecoration({
     Color color = primaryNeon,
     double borderRadius = 16,
@@ -304,7 +259,6 @@ class AppTheme {
     );
   }
 
-  /// Gradiente de fondo para pantallas
   static BoxDecoration get backgroundGradient {
     return const BoxDecoration(
       gradient: LinearGradient(
