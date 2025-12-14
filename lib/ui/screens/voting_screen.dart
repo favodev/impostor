@@ -49,11 +49,16 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
           .where((p) => !_eliminatedPlayerIds.contains(p.id))
           .toList();
 
-      if (remainingPlayers.length <= 2) {
-        final impostor = remainingPlayers.firstWhere((p) => p.isImpostor);
+      final remainingImpostors =
+          remainingPlayers.where((p) => p.isImpostor).toList();
+      final remainingCitizens =
+          remainingPlayers.where((p) => !p.isImpostor).toList();
+
+      if (remainingImpostors.length >= remainingCitizens.length) {
+        final impostorNames = remainingImpostors.map((p) => p.name).join(', ');
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) {
-            _showDefeatDialog(impostor.name);
+            _showDefeatDialog(impostorNames);
           }
         });
       }

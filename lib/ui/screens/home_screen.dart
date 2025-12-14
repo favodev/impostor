@@ -33,6 +33,12 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    precacheImage(const AssetImage(_logoPath), context);
+  }
+
+  @override
   void dispose() {
     _pulseController.dispose();
     super.dispose();
