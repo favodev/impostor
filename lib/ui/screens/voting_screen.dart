@@ -132,9 +132,7 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     ref.read(gameStateProvider.notifier).resetGame();
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
+                    Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.dangerNeon,
@@ -240,9 +238,7 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     ref.read(gameStateProvider.notifier).resetGame();
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
+                    Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.accentNeon,
