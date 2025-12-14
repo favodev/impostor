@@ -20,7 +20,6 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
   bool _isRevealing = false;
   bool _isTransitioning = false;
 
-  // Controladores de animación
   late AnimationController _revealController;
   late AnimationController _impostorGlowController;
 
@@ -31,7 +30,6 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
   void initState() {
     super.initState();
 
-    // Animación de revelación
     _revealController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -42,7 +40,6 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
       curve: Curves.easeOutCubic,
     );
 
-    // Animación de brillo para impostor
     _impostorGlowController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -68,18 +65,15 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
 
     final currentPlayer = ref.read(gameStateProvider).currentPlayer;
 
-    // Vibración si es impostor
     if (currentPlayer?.isImpostor ?? false) {
       final hasVibrator = await Vibration.hasVibrator();
       if (hasVibrator == true) {
-        // Patrón de vibración intenso para impostor
         Vibration.vibrate(pattern: [0, 100, 50, 100, 50, 200]);
       }
     } else {
       HapticFeedback.mediumImpact();
     }
 
-    // Marcar que el jugador vio su rol
     ref.read(gameStateProvider.notifier).currentPlayerSawRole();
   }
 
@@ -87,18 +81,14 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     final gameState = ref.read(gameStateProvider);
 
     if (gameState.currentPlayerIndex < gameState.players.length - 1) {
-      // Estado de transición para evitar flicker
       setState(() => _isTransitioning = true);
 
-      // Esperar a que la animación de salida termine
       await Future.delayed(const Duration(milliseconds: 200));
 
-      // Verificar que el widget siga montado
       if (!mounted) return;
 
       ref.read(gameStateProvider.notifier).nextPlayer();
 
-      // Reiniciar estado para el siguiente jugador
       _revealController.reset();
       setState(() {
         _isRevealing = false;
@@ -106,7 +96,6 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
       });
       HapticFeedback.lightImpact();
     } else {
-      // Todos han visto su rol, ir a votación
       ref.read(gameStateProvider.notifier).nextPlayer();
 
       Navigator.of(context).pushReplacement(
@@ -147,7 +136,6 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
         child: SafeArea(
           child: Column(
             children: [
-              // Header con progreso
               Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
@@ -160,7 +148,6 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                           ),
                     ),
                     const SizedBox(height: 16),
-                    // Indicador de progreso
                     Text(
                       '${gameState.currentPlayerIndex + 1} / ${gameState.players.length}',
                       style: TextStyle(
@@ -171,22 +158,18 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                   ],
                 ),
               ),
-
-              // Contenido principal
               Expanded(
                 child: Center(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child: _isTransitioning
-                        ? _buildTransitionState() // Pantalla neutra durante transición
+                        ? _buildTransitionState()
                         : _isRevealing
                             ? _buildRoleReveal(currentPlayer, gameState)
                             : _buildWaitingState(currentPlayer),
                   ),
                 ),
               ),
-
-              // Botón siguiente/jugar (visible cuando se ha revelado)
               Padding(
                 padding: const EdgeInsets.all(24),
                 child: _isRevealing
@@ -229,7 +212,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                           ),
                         ),
                       )
-                    : const SizedBox(height: 66), // Mantener espacio
+                    : const SizedBox(height: 66),
               ),
             ],
           ),
@@ -238,7 +221,6 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     );
   }
 
-  /// Estado de transición - pantalla neutra para evitar flicker
   Widget _buildTransitionState() {
     return Container(
       key: const ValueKey('transition'),
@@ -265,12 +247,10 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     );
   }
 
-  /// Estado de espera - muestra el nombre del jugador
   Widget _buildWaitingState(Player player) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Nombre del jugador
         Text(
           'Turno de',
           style: Theme.of(
@@ -346,7 +326,6 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     );
   }
 
-  /// Estado de revelación - muestra el rol
   Widget _buildRoleReveal(Player player, GameState gameState) {
     if (player.isImpostor) {
       return _buildImpostorReveal(gameState);
@@ -355,7 +334,6 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     }
   }
 
-  /// Revelación para ciudadano - muestra la palabra secreta
   Widget _buildCitizenReveal(GameState gameState) {
     return FadeTransition(
       opacity: _revealAnimation,
@@ -442,7 +420,6 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     );
   }
 
-  /// Revelación para impostor - muestra alerta roja
   Widget _buildImpostorReveal(GameState gameState) {
     return FadeTransition(
       opacity: _revealAnimation,
@@ -471,7 +448,6 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Ícono de silencio animado
                   TweenAnimationBuilder<double>(
                     tween: Tween(begin: 0, end: 1),
                     duration: const Duration(milliseconds: 500),
@@ -511,8 +487,6 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                     ),
                   ),
                   const SizedBox(height: 24),
-
-                  // Ícono de silencio
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -534,10 +508,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 24),
-
-                  // Pista de palabra relacionada (opcional)
                   if (gameState.impostorSeesHint) ...[
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -579,7 +550,6 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                           ),
                     ),
                   ],
-
                   const SizedBox(height: 16),
                   Text(
                     'Intenta descubrir la palabra secreta\nsin que te descubran',
