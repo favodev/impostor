@@ -6,7 +6,7 @@ import '../../core/models/game_state.dart';
 import '../../core/models/player.dart';
 import '../../core/providers/game_provider.dart';
 import '../../core/theme/app_theme.dart';
-import 'voting_screen.dart';
+import 'starting_player_screen.dart';
 
 class RoleRevealScreen extends ConsumerStatefulWidget {
   const RoleRevealScreen({super.key});
@@ -101,7 +101,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              const VotingScreen(),
+              const StartingPlayerScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(
               opacity: animation,

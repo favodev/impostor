@@ -17,12 +17,18 @@ class VotingScreen extends ConsumerStatefulWidget {
 class _VotingScreenState extends ConsumerState<VotingScreen> {
   Player? _selectedPlayer;
   int _currentRound = 1;
-  final Set<String> _eliminatedPlayerIds = {};
 
   void _vote() async {
     if (_selectedPlayer == null) return;
 
     final votedPlayer = _selectedPlayer!;
+    ref.read(gameStateProvider.notifier).eliminatePlayer(votedPlayer.id);
+    final updatedState = ref.read(gameStateProvider);
+    final remainingPlayers = updatedState.activePlayers;
+    final remainingImpostors =
+        remainingPlayers.where((player) => player.isImpostor).toList();
+    final remainingCitizens =
+        remainingPlayers.where((player) => !player.isImpostor).toList();
 
     final isImpostor = votedPlayer.isImpostor;
     if (isImpostor) {
@@ -32,27 +38,21 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
         Vibration.vibrate(duration: 500);
       }
 
-      if (mounted) {
-        _showVictoryDialog(votedPlayer.name);
+      if (!mounted) return;
+
+      if (remainingImpostors.isEmpty) {
+        final allImpostors = updatedState.impostors.map((p) => p.name).join(', ');
+        _showVictoryDialog(allImpostors);
+      } else {
+        _showImpostorFoundDialog(votedPlayer.name, remainingImpostors.length);
       }
     } else {
       setState(() {
-        _eliminatedPlayerIds.add(votedPlayer.id);
         _selectedPlayer = null;
         _currentRound++;
       });
 
       HapticFeedback.mediumImpact();
-
-      final gameState = ref.read(gameStateProvider);
-      final remainingPlayers = gameState.players
-          .where((p) => !_eliminatedPlayerIds.contains(p.id))
-          .toList();
-
-      final remainingImpostors =
-          remainingPlayers.where((p) => p.isImpostor).toList();
-      final remainingCitizens =
-          remainingPlayers.where((p) => !p.isImpostor).toList();
 
       if (remainingImpostors.length >= remainingCitizens.length) {
         final impostorNames = remainingImpostors.map((p) => p.name).join(', ');
@@ -65,7 +65,98 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
     }
   }
 
-  void _showDefeatDialog(String impostorName) {
+  void _showImpostorFoundDialog(String impostorName, int remainingImpostors) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        backgroundColor: AppTheme.backgroundIndigo,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(
+            color: AppTheme.accentNeon,
+            width: 2,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.search_rounded,
+                size: 64,
+                color: AppTheme.accentNeon,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                '¡IMPOSTOR DESCUBIERTO!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.orbitron(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.accentNeon,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                impostorName,
+                style: GoogleFonts.rajdhani(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.dangerNeon,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                remainingImpostors == 1
+                    ? 'Queda 1 impostor por encontrar'
+                    : 'Quedan $remainingImpostors impostores por encontrar',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.rajdhani(
+                  fontSize: 16,
+                  color: Colors.white70,
+                ),
+              ),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    setState(() {
+                      _selectedPlayer = null;
+                      _currentRound++;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.accentNeon,
+                    foregroundColor: AppTheme.backgroundIndigo,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'SEGUIR VOTANDO',
+                    style: GoogleFonts.orbitron(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showDefeatDialog(String impostorNames) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -115,7 +206,7 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                impostorName,
+                impostorNames,
                 style: GoogleFonts.rajdhani(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
@@ -172,7 +263,7 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
     );
   }
 
-  void _showVictoryDialog(String impostorName) {
+  void _showVictoryDialog(String impostorNames) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -222,7 +313,7 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                impostorName,
+                impostorNames,
                 style: GoogleFonts.rajdhani(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
@@ -231,7 +322,7 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'era el impostor',
+                'eran los impostores',
                 style: GoogleFonts.rajdhani(
                   fontSize: 16,
                   color: Colors.white70,
@@ -281,9 +372,7 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
   @override
   Widget build(BuildContext context) {
     final gameState = ref.watch(gameStateProvider);
-    final activePlayers = gameState.players
-        .where((player) => !_eliminatedPlayerIds.contains(player.id))
-        .toList();
+    final activePlayers = gameState.activePlayers;
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundIndigo,

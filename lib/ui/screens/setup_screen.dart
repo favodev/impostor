@@ -27,12 +27,22 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
 
   void _addPlayer() {
     final name = _nameController.text.trim();
-    if (name.isNotEmpty) {
-      ref.read(gameStateProvider.notifier).addPlayer(name);
-      _nameController.clear();
-      _nameFocusNode.requestFocus();
-      HapticFeedback.lightImpact();
+    if (name.isEmpty) return;
+
+    final players = ref.read(gameStateProvider).players;
+    final alreadyExists = players.any(
+      (player) => player.name.toLowerCase() == name.toLowerCase(),
+    );
+
+    if (alreadyExists) {
+      _showError('Ese jugador ya fue agregado');
+      return;
     }
+
+    ref.read(gameStateProvider.notifier).addPlayer(name);
+    _nameController.clear();
+    _nameFocusNode.requestFocus();
+    HapticFeedback.lightImpact();
   }
 
   void _removePlayer(String playerId) {
