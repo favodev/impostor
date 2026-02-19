@@ -200,6 +200,7 @@ class GameStateNotifier extends StateNotifier<GameState> {
       players: cachedPlayers,
       selectedCategories: state.selectedCategories,
       impostorCount: state.impostorCount,
+      timerDuration: state.timerDuration,
       impostorSeesHint: state.impostorSeesHint,
       phase: GamePhase.setup,
     );

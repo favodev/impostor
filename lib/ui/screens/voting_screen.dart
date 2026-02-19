@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +19,92 @@ class VotingScreen extends ConsumerStatefulWidget {
 class _VotingScreenState extends ConsumerState<VotingScreen> {
   Player? _selectedPlayer;
   int _currentRound = 1;
+  Timer? _gameTimer;
+  int? _remainingSeconds;
+  bool _timeoutHandled = false;
+  bool _didAlert45Seconds = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeGameTimer();
+  }
+
+  @override
+  void dispose() {
+    _gameTimer?.cancel();
+    super.dispose();
+  }
+
+  void _initializeGameTimer() {
+    final timerMinutes = ref.read(gameStateProvider).timerDuration;
+    if (timerMinutes == null) return;
+
+    _remainingSeconds = timerMinutes * 60;
+    _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted || _timeoutHandled) {
+        timer.cancel();
+        return;
+      }
+
+      final currentSeconds = _remainingSeconds;
+      if (currentSeconds == null) {
+        timer.cancel();
+        return;
+      }
+
+      if (currentSeconds == 45 && !_didAlert45Seconds) {
+        _didAlert45Seconds = true;
+        _triggerShortTimeWarning();
+      }
+
+      if (currentSeconds <= 1) {
+        setState(() {
+          _remainingSeconds = 0;
+        });
+        timer.cancel();
+        _handleTimeout();
+        return;
+      }
+
+      setState(() {
+        _remainingSeconds = currentSeconds - 1;
+      });
+    });
+  }
+
+  Future<void> _triggerShortTimeWarning() async {
+    HapticFeedback.lightImpact();
+
+    final hasVibrator = await Vibration.hasVibrator();
+    if (hasVibrator == true) {
+      Vibration.vibrate(duration: 120);
+    }
+  }
+
+  void _handleTimeout() {
+    if (_timeoutHandled) return;
+    _timeoutHandled = true;
+
+    final activeImpostors = ref
+        .read(gameStateProvider)
+        .activePlayers
+        .where((player) => player.isImpostor)
+        .map((player) => player.name)
+        .join(', ');
+
+    final impostorNames = activeImpostors.isEmpty
+        ? ref.read(gameStateProvider).impostors.map((player) => player.name).join(', ')
+        : activeImpostors;
+
+    _showTimeoutDialog(impostorNames);
+  }
+
+  String _formatTime(int totalSeconds) {
+    final minutes = (totalSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (totalSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
 
   void _vote() async {
     if (_selectedPlayer == null) return;
@@ -54,7 +142,11 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
 
       HapticFeedback.mediumImpact();
 
-      if (remainingImpostors.length >= remainingCitizens.length) {
+      final shouldEndByImpostorWin =
+          remainingCitizens.isEmpty ||
+          (remainingImpostors.length == 1 && remainingCitizens.length == 1);
+
+      if (shouldEndByImpostorWin) {
         final impostorNames = remainingImpostors.map((p) => p.name).join(', ');
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) {
@@ -156,7 +248,98 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
     );
   }
 
+  void _showTimeoutDialog(String impostorNames) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        backgroundColor: AppTheme.backgroundIndigo,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(
+            color: AppTheme.warningNeon,
+            width: 2,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.timer_off_rounded,
+                color: AppTheme.warningNeon,
+                size: 64,
+              ),
+              const SizedBox(height: 22),
+              Text(
+                '¡SE ACABÓ EL TIEMPO!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.orbitron(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.warningNeon,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Los impostores ganan esta partida.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.rajdhani(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                impostorNames,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.rajdhani(
+                  fontSize: 18,
+                  color: AppTheme.dangerNeon,
+                ),
+              ),
+              const SizedBox(height: 30),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    _gameTimer?.cancel();
+                    ref.read(gameStateProvider.notifier).resetGame();
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.warningNeon,
+                    foregroundColor: AppTheme.backgroundIndigo,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'VOLVER A JUGAR',
+                    style: GoogleFonts.orbitron(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showDefeatDialog(String impostorNames) {
+    _timeoutHandled = true;
+    _gameTimer?.cancel();
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -264,6 +447,9 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
   }
 
   void _showVictoryDialog(String impostorNames) {
+    _timeoutHandled = true;
+    _gameTimer?.cancel();
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -394,6 +580,42 @@ class _VotingScreenState extends ConsumerState<VotingScreen> {
                         letterSpacing: 3,
                       ),
                     ),
+                    if (_remainingSeconds != null) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accentNeon.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: AppTheme.accentNeon.withValues(alpha: 0.55),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.timer_rounded,
+                              size: 18,
+                              color: AppTheme.accentNeon,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _formatTime(_remainingSeconds!),
+                              style: GoogleFonts.orbitron(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.accentNeon,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     Text(
                       '¿Quién es el impostor?',

@@ -156,6 +156,8 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
                     _buildImpostorSelector(gameState, maxImpostors),
                     const SizedBox(height: 16),
                     _buildHintToggle(gameState),
+                    const SizedBox(height: 16),
+                    _buildTimerConfig(gameState),
                     const SizedBox(height: 32),
                     Row(
                       children: [
@@ -516,6 +518,97 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
             inactiveThumbColor: AppTheme.textMuted,
             inactiveTrackColor: AppTheme.textMuted.withValues(alpha: 0.3),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimerConfig(GameState gameState) {
+    final timerEnabled = gameState.timerDuration != null;
+    final selectedMinutes = (gameState.timerDuration ?? 10).clamp(1, 30);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.primaryNeon.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.timer_outlined,
+                color: AppTheme.primaryNeon,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Límite de tiempo de partida',
+                      style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      timerEnabled
+                          ? '$selectedMinutes minuto${selectedMinutes == 1 ? '' : 's'}'
+                          : 'Desactivado',
+                      style: TextStyle(
+                        color: AppTheme.textSecondary.withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: timerEnabled,
+                onChanged: (enabled) {
+                  ref
+                      .read(gameStateProvider.notifier)
+                      .setTimerDuration(enabled ? (gameState.timerDuration ?? 10) : null);
+                },
+                activeThumbColor: AppTheme.primaryNeon,
+                activeTrackColor: AppTheme.primaryNeon.withValues(alpha: 0.3),
+                inactiveThumbColor: AppTheme.textMuted,
+                inactiveTrackColor: AppTheme.textMuted.withValues(alpha: 0.3),
+              ),
+            ],
+          ),
+          if (timerEnabled) ...[
+            const SizedBox(height: 12),
+            SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                activeTrackColor: AppTheme.primaryNeon,
+                inactiveTrackColor: AppTheme.primaryNeon.withValues(alpha: 0.2),
+                thumbColor: AppTheme.primaryNeon,
+                overlayColor: AppTheme.primaryNeon.withValues(alpha: 0.2),
+                trackHeight: 4,
+              ),
+              child: Slider(
+                value: selectedMinutes.toDouble(),
+                min: 1,
+                max: 30,
+                divisions: 29,
+                label: '$selectedMinutes min',
+                onChanged: (value) {
+                  ref
+                      .read(gameStateProvider.notifier)
+                      .setTimerDuration(value.toInt());
+                },
+              ),
+            ),
+          ],
         ],
       ),
     );

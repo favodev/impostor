@@ -9,3 +9,4 @@ Un juego social de deducción desarrollado en Flutter con un tema Cyberpunk/Noir
 3. **Debate**: Discutan sobre el tema. Cada jugador describe algo relacionado con la palabra.
 4. **Votación**: Marquen quién creen que es el pillo.
 5. **Resultados**: Revelen las identidades y vean quién ganó.
+
